@@ -323,7 +323,6 @@ router.post("/fetch_User_Expense_Details_Daily", async (req, res) => {
           _id: 0,
           "details.day": 1,
           "details.expense": 1,
-          "details.info": 1,
         },
       },
     ]).exec((err, yearly_Expense) => {
