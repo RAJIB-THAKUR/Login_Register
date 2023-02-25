@@ -128,13 +128,15 @@ router.post("/userData", async (req, res) => {
       .catch((error) => {
         res.send({ status: "ok", data: error });
       });
-  } catch (error) {res.send({ status: "Failed", data: error });}
+  } catch (error) {
+    res.send({ status: "Failed", data: error });
+  }
 });
 
 //ROUTE-4:Add Expense for any day
 router.post("/add_User_Expense_Daily", async (req, res) => {
   try {
-    const { token, year, month, day, field, value } = req.body;
+    const { token, year, month, day, field, value, info } = req.body;
     // console.log(req.body);
     const email = jwt.verify(token, JWT_SECRET).email;
     User.findOne(
@@ -152,7 +154,11 @@ router.post("/add_User_Expense_Daily", async (req, res) => {
               email: email,
               details: { $elemMatch: { year: year, month: month, day: day } },
             },
-            { $push: { "details.$.expense": { type: field, val: value } } },
+            {
+              $push: {
+                "details.$.expense": { type: field, val: value, info: info },
+              },
+            },
             async (error, ans) => {
               if (error) res.send(error);
               else {
@@ -171,7 +177,7 @@ router.post("/add_User_Expense_Daily", async (req, res) => {
                   year: year,
                   month: month,
                   day: day,
-                  expense: [{ type: field, val: value }],
+                  expense: [{ type: field, val: value, info: info }],
                 },
               },
             },
@@ -312,7 +318,14 @@ router.post("/fetch_User_Expense_Details_Daily", async (req, res) => {
           "details.day": day,
         },
       },
-      { $project: { _id: 0, "details.day": 1, "details.expense": 1 } },
+      {
+        $project: {
+          _id: 0,
+          "details.day": 1,
+          "details.expense": 1,
+          "details.info": 1,
+        },
+      },
     ]).exec((err, yearly_Expense) => {
       if (err) {
         console.log(err);
