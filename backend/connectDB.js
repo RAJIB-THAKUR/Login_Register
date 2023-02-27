@@ -4,7 +4,7 @@ mongoose.set("strictQuery", false);
 //Function to Connect MongoDB
 const connect_MongoDB = () =>
   mongoose
-    .connect("mongodb://localhost:27017/myLoginRegisterDB", {
+    .connect("mongodb://localhost:27017/myCoinSaverDB", {
       useNewUrlParser: true,
     })
     .then(() => {

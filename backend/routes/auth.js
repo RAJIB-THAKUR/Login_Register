@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+var ObjectId = require("mongodb").ObjectID;
 
 // const User = require("../models/user_Model");
 const User = require("../models/user_Model_Updated");
@@ -92,7 +93,7 @@ router.post(
     }
     // if ((await password) === user.password)
     if (await bcrypt.compare(password, user.password)) {
-      const token = jwt.sign({ email: user.email }, JWT_SECRET);
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET);
       // console.log(token);
 
       //Verification
@@ -109,7 +110,7 @@ router.post(
         });
       }
     }
-    res.json({ status: 400, error: [{ msg: "Invalid Password" }] });
+    res.json({ status: 400, error: [{ msg: "IInvalid Password" }] });
   }
 );
 
@@ -138,10 +139,12 @@ router.post("/add_User_Expense_Daily", async (req, res) => {
   try {
     const { token, year, month, day, field, value, info } = req.body;
     // console.log(req.body);
-    const email = jwt.verify(token, JWT_SECRET).email;
+    const _id = jwt.verify(token, JWT_SECRET)._id;
+    console.log(_id);
     User.findOne(
       {
-        email: email,
+        _id: ObjectId(_id),
+        // email: email,
         details: { $elemMatch: { year: year, month: month, day: day } },
       },
       async (err, user) => {
@@ -149,9 +152,10 @@ router.post("/add_User_Expense_Daily", async (req, res) => {
         // console.log(user);
         if (user) {
           // console.log("3");
+          console.log(user._id);
           User.updateOne(
             {
-              email: email,
+              _id: _id,
               details: { $elemMatch: { year: year, month: month, day: day } },
             },
             {
@@ -163,14 +167,16 @@ router.post("/add_User_Expense_Daily", async (req, res) => {
               if (error) res.send(error);
               else {
                 console.log(ans);
-                res.send({ message: "successfully stored", ans });
+                if (ans.modifiedCount === 1) {
+                  res.send({ message: "successfully stored", ans });
+                }
               }
             }
           );
         } else {
           // console.log("4");
           User.updateOne(
-            { email: email },
+            { _id: _id },
             {
               $push: {
                 details: {
@@ -186,7 +192,9 @@ router.post("/add_User_Expense_Daily", async (req, res) => {
               else {
                 // console.log("5");
                 console.log(ans);
-                res.send({ message: "successfully stored", ans });
+                if (ans.modifiedCount === 1) {
+                  res.send({ message: "successfully stored", ans });
+                }
               }
             }
           );
@@ -203,9 +211,9 @@ router.post("/add_User_Expense_Daily", async (req, res) => {
 router.post("/fetch_User_Expense_Sum_Daily", async (req, res) => {
   try {
     const { token, year, month, day } = req.body;
-    const email = jwt.verify(token, JWT_SECRET).email;
+    const _id = jwt.verify(token, JWT_SECRET)._id;
     const f = User.aggregate([
-      { $match: { email: email } },
+      { $match: { _id: ObjectId(_id) } },
       { $unwind: "$details" },
       {
         $match: {
@@ -241,9 +249,11 @@ router.post("/fetch_User_Expense_Sum_Daily", async (req, res) => {
 router.post("/fetch_User_Expense_Sum_Monthly", async (req, res) => {
   try {
     const { token, year, month } = req.body;
-    const email = jwt.verify(token, JWT_SECRET).email;
+    const _id = jwt.verify(token, JWT_SECRET)._id;
+    console.log(_id);
+    // const email="shuvo123@gmail.com";
     const f = User.aggregate([
-      { $match: { email: email } },
+      { $match: { _id: ObjectId(_id) } },
       { $unwind: "$details" },
       { $match: { "details.year": year, "details.month": month } },
       { $unwind: "$details.expense" },
@@ -273,16 +283,16 @@ router.post("/fetch_User_Expense_Sum_Monthly", async (req, res) => {
 router.post("/fetch_User_Expense_Sum_Yearly", async (req, res) => {
   try {
     const { token, year } = req.body;
-    const email = jwt.verify(token, JWT_SECRET).email;
+    const _id = jwt.verify(token, JWT_SECRET)._id;
 
     const f = User.aggregate([
-      { $match: { email: email } },
+      { $match: { _id: ObjectId(_id) } },
       { $unwind: "$details" },
       { $match: { "details.year": year } },
       { $unwind: "$details.expense" },
       {
         $group: {
-          _id: "$details.month",
+          _id: "$details.year",
           sum: { $sum: "$details.expense.val" },
         },
       },
@@ -306,10 +316,10 @@ router.post("/fetch_User_Expense_Sum_Yearly", async (req, res) => {
 router.post("/fetch_User_Expense_Details_Daily", async (req, res) => {
   try {
     const { token, year, month, day } = req.body;
-    const email = jwt.verify(token, JWT_SECRET).email;
+    const _id = jwt.verify(token, JWT_SECRET)._id;
 
     const f = User.aggregate([
-      { $match: { email: email } },
+      { $match: { _id: ObjectId(_id) } },
       { $unwind: "$details" },
       {
         $match: {
@@ -323,16 +333,17 @@ router.post("/fetch_User_Expense_Details_Daily", async (req, res) => {
           _id: 0,
           "details.day": 1,
           "details.expense": 1,
+          "details._id": 1,
         },
       },
-    ]).exec((err, yearly_Expense) => {
+    ]).exec((err, daily_Expense) => {
       if (err) {
         console.log(err);
         res.setHeader("Content-Type", "application/json");
         res.send(JSON.stringify({ message: "Failure" }));
         res.sendStatus(500);
       } else {
-        res.send(yearly_Expense);
+        res.send(daily_Expense);
       }
     });
   } catch (err) {
@@ -345,9 +356,9 @@ router.post("/fetch_User_Expense_Details_Daily", async (req, res) => {
 router.post("/fetch_User_Expense_Details_Monthly", async (req, res) => {
   try {
     const { token, year, month } = req.body;
-    const email = jwt.verify(token, JWT_SECRET).email;
+    const _id = jwt.verify(token, JWT_SECRET)._id;
     const f = User.aggregate([
-      { $match: { email: email } },
+      { $match: { _id: ObjectId(_id) } },
       { $unwind: "$details" },
       { $match: { "details.year": year, "details.month": month } },
       { $unwind: "$details.expense" },
@@ -384,9 +395,9 @@ router.post("/fetch_User_Expense_Details_Monthly", async (req, res) => {
 router.post("/fetch_User_Expense_Details_Yearly", async (req, res) => {
   try {
     const { token, year } = req.body;
-    const email = jwt.verify(token, JWT_SECRET).email;
+    const _id = jwt.verify(token, JWT_SECRET)._id;
     const f = User.aggregate([
-      { $match: { email: email } },
+      { $match: { _id: ObjectId(_id) } },
       { $unwind: "$details" },
       { $match: { "details.year": year } },
       { $unwind: "$details.expense" },
@@ -410,6 +421,159 @@ router.post("/fetch_User_Expense_Details_Yearly", async (req, res) => {
   } catch (err) {
     res.send(err);
     // console.log(err);
+  }
+});
+
+//ROUTE-11:Fetch Type-Wise expense for a month
+router.post("/fetch_User_Expense_TypeWise_Monthly", async (req, res) => {
+  try {
+    const { token, year, month } = req.body;
+    const _id = jwt.verify(token, JWT_SECRET)._id;
+
+    const f = User.aggregate([
+      { $match: { _id: ObjectId(_id) } },
+      { $unwind: "$details" },
+      { $match: { "details.year": year, "details.month": month } },
+      { $unwind: "$details.expense" },
+      {
+        $group: {
+          _id: "$details.expense.type",
+          sum: { $sum: "$details.expense.val" },
+        },
+      },
+    ]).exec((err, monthly_Expense) => {
+      if (err) {
+        console.log(err);
+        res.setHeader("Content-Type", "application/json");
+        res.send(JSON.stringify({ message: "Failure" }));
+        res.sendStatus(500);
+      } else {
+        res.send(monthly_Expense);
+      }
+    });
+  } catch (err) {
+    // res.send(err);
+    console.log(err);
+  }
+});
+
+//ROUTE-12:Fetch Type-Wise expense  for a year
+router.post("/fetch_User_Expense_TypeWise_Yearly", async (req, res) => {
+  try {
+    const { token, year } = req.body;
+    const _id = jwt.verify(token, JWT_SECRET)._id;
+
+    const f = User.aggregate([
+      { $match: { _id: ObjectId(_id) } },
+      { $unwind: "$details" },
+      { $match: { "details.year": year } },
+      { $unwind: "$details.expense" },
+      {
+        $group: {
+          _id: "$details.expense.type",
+          sum: { $sum: "$details.expense.val" },
+        },
+      },
+    ]).exec((err, yearly_Expense) => {
+      if (err) {
+        console.log(err);
+        res.setHeader("Content-Type", "application/json");
+        res.send(JSON.stringify({ message: "Failure" }));
+        res.sendStatus(500);
+      } else {
+        res.send(yearly_Expense);
+      }
+    });
+  } catch (err) {
+    // res.send(err);
+    console.log(err);
+  }
+});
+
+//ROUTE-13:Update any particular Expense for any day
+router.post("/update_Any_User_Expense_", async (req, res) => {
+  try {
+    const { token, date_id, expense_id, new_field, new_value, new_info } =
+      req.body;
+    // console.log(req.body);
+    const _id = jwt.verify(token, JWT_SECRET)._id;
+    console.log(_id);
+
+    User.updateOne(
+      {
+        _id: ObjectId(_id),
+      },
+      {
+        $set: {
+          "details.$[i].expense.$[j].val": new_value,
+          "details.$[i].expense.$[j].type": new_field,
+          "details.$[i].expense.$[j].info": new_info,
+        },
+      },
+      {
+        arrayFilters: [
+          { "i._id": ObjectId(date_id) },
+          { "j._id": ObjectId(expense_id) },
+        ],
+      },
+      async (error, ans) => {
+        if (error) res.send(error);
+        else {
+          // console.log(ans);
+          if (ans.modifiedCount === 1) {
+            res.send({ message: "successfully stored", ans });
+          } else {
+            if (ans.matchedCount === 1) {
+              res.send({
+                message: "Kindly Provide Updated Expense Details",
+                ans,
+              });
+            } else {
+              res.send({ message: "Could not update", ans });
+            }
+          }
+        }
+      }
+    );
+  } catch (error) {
+    // console.log(error);
+    res.send({
+      message: "Some Error Occured\nExpense not updated",
+      error: error.message,
+    });
+  }
+});
+
+//ROUTE-14:Delete Expense for any day
+router.post("/delete_User_Expense", async (req, res) => {
+  try {
+    const { token, date_id, expense_id } = req.body;
+    // console.log(req.body);
+    const _id = jwt.verify(token, JWT_SECRET)._id;
+    // console.log(_id);
+    User.updateOne(
+      {
+        _id: ObjectId(_id),
+      },
+      {
+        $pull: {
+          "details.$[i].expense": { _id: expense_id },
+        },
+      },
+      {
+        arrayFilters: [{ "i._id": ObjectId(date_id) }],
+      },
+      async (error, ans) => {
+        if (error)
+          res.send({ message: "Could not Delete", error: error.message });
+        else {
+          res.send({ message: "Could not Delete \n No Expense Available for the provided data", ans });
+        }
+      }
+    );
+  } catch (error) {
+    console.log(error);
+    res.send({ error });
   }
 });
 
