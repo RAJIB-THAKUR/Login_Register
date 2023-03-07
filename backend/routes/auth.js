@@ -567,7 +567,15 @@ router.post("/delete_User_Expense", async (req, res) => {
         if (error)
           res.send({ message: "Could not Delete", error: error.message });
         else {
-          res.send({ message: "Could not Delete \n No Expense Available for the provided data", ans });
+          if (ans.modifiedCount === 1) {
+            res.send({ message: "Successfully Deleted" });
+          } else {
+            res.send({
+              message:
+                "Could not Delete \n No Expense Available for the provided data",
+              ans,
+            });
+          }
         }
       }
     );
