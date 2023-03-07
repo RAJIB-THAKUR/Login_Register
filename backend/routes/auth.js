@@ -568,7 +568,7 @@ router.post("/delete_User_Expense", async (req, res) => {
           res.send({ message: "Could not Delete", error: error.message });
         else {
           if (ans.modifiedCount === 1) {
-            res.send({ message: "Successfully Deleted" });
+            res.send({ message: "Successfully Deleted", ans });
           } else {
             res.send({
               message:
