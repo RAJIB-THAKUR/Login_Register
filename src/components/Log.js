@@ -16,7 +16,7 @@ class Log extends React.Component {
     e.preventDefault();
     const {email,password}=this.state;
     console.log(email, password);
-    fetch(`http://localhost:${PORT}/user/login-user`, {
+    fetch(`http://localhost:${PORT}/user/login`, {
       method: "POST",
       crossDomain: true,
       headers: {

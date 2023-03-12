@@ -51,7 +51,7 @@ const userSchema = new mongoose.Schema({
       ],
     },
   ],
-  
+  prof_Pic:String,
 });
 
 const Expense = mongoose.model("expenses2", userSchema);

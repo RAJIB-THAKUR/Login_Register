@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
-var ObjectId = require("mongodb").ObjectID;
+const ObjectId = require("mongodb").ObjectID;
+const multer = require("multer");
+const upload = multer({ dest: "uploads/" });
 
 // const User = require("../models/user_Model");
 const User = require("../models/user_Model_Updated");
@@ -40,7 +42,7 @@ router.post(
     const { name, email, mobile, password } = req.body;
 
     try {
-      const oldUser = await User.findOne({ email });
+      const oldUser = await User.findOne({ email }, { _id: 0, email: 1 });
 
       if (oldUser) {
         return res.status(400).json({
@@ -70,7 +72,7 @@ router.post(
 
 //ROUTE-2: "login" user
 router.post(
-  "/login-user",
+  "/login",
   [
     body("email", "Enter Valid Email").isEmail(),
     body("password", "Password must be of minimun 5 characters").isLength({
@@ -84,7 +86,8 @@ router.post(
     }
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }, { _id: 1, password: 1 });
+
     if (!user) {
       return res.status(400).json({
         status: 400,
@@ -584,6 +587,166 @@ router.post("/delete_User_Expense", async (req, res) => {
     res.send({ error });
   }
 });
+
+//ROUTE-15:Verify User Password
+router.post(
+  "/verify_User_Password",
+  [
+    body("password", "Password must be of minimun 5 characters").isLength({
+      min: 5,
+    }),
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res
+          .status(400)
+          .json({ status: 400, error: errors.array()[0].msg });
+      }
+
+      const { token, password } = req.body;
+      const _id = jwt.verify(token, JWT_SECRET)._id;
+      // console.log(req.body);
+      // console.log(_id);
+
+      const user = await User.findOne(
+        { _id: ObjectId(_id) },
+        { _id: 0, password: 1 }
+      );
+
+      if (await bcrypt.compare(password, user.password)) {
+        return res.json({
+          status: 201,
+          message: "Correct Password",
+        });
+      } else {
+        return res.json({
+          status: 400,
+          message: "Incorrect Password",
+        });
+      }
+    } catch (error) {
+      res.send({ error: error.message });
+      // console.log(error);
+    }
+  }
+);
+
+//ROUTE-16:Update User Password
+router.post(
+  "/update_User_Password",
+  [
+    body("new_Password", "Password must be of minimun 5 characters").isLength({
+      min: 5,
+    }),
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res
+          .status(400)
+          .json({ status: 400, error: errors.array()[0].msg });
+      }
+
+      const { token, new_Password } = req.body;
+      const _id = jwt.verify(token, JWT_SECRET)._id;
+      // console.log(req.body);
+      // console.log(_id);
+
+      const user = await User.findOne(
+        { _id: ObjectId(_id) },
+        { _id: 0, password: 1 }
+      );
+
+      if (await bcrypt.compare(new_Password, user.password)) {
+        return res.json({
+          status: 201,
+          message:
+            "New Password and current password cannot be same\nEnter new password",
+        });
+      }
+
+      const salt = await bcrypt.genSalt(10);
+      const encryptedPassword = await bcrypt.hash(new_Password, salt);
+
+      User.updateOne(
+        {
+          _id: ObjectId(_id),
+        },
+        {
+          password: encryptedPassword,
+        },
+        async (error, ans) => {
+          if (error)
+            res.send({
+              message: "Could not Upadte Password",
+              error: error.message,
+            });
+          else {
+            if (ans.modifiedCount === 1) {
+              res.send({ message: "Password Updated Successfully", ans });
+            } else {
+              res.send({
+                message: "Could not Update Password\nSome Error Occured",
+                ans,
+              });
+            }
+          }
+        }
+      );
+    } catch (error) {
+      res.send({ error: error.message });
+      // console.log(error);
+    }
+  }
+);
+
+//----------------IN-PROGRESS--------------
+
+//ROUTE-17:Add Profile Picture of user
+router.post("/add_User_Profile_Picture", async (req, res) => {
+  const { prof_Pic } = req.body;
+
+  function convertToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const fileReader = new window.FileReader();
+      //Converts into Base64 Format
+      fileReader.readAsDataURL(file);
+      fileReader.onload = () => {
+        resolve(fileReader.result);
+      };
+      fileReader.onerror = (error) => {
+        reject(error);
+      };
+    });
+  }
+  const prof_Pic_Base64 = convertToBase64(prof_Pic);
+  console.log("Hi", prof_Pic_Base64);
+  // try {
+  //   await User.create({
+  //     prof_Pic_Base64,
+  //   });
+  //   res.send({ message: "Successfully Stored" });
+  // } catch (error) {
+  //   console.log(error);
+  //   res.status(500).send({
+  //     status: 500,
+  //     error: error.msg,
+  //   });
+  // }
+});
+
+//ROUTE-18:Add Profile Picture of user
+router.post(
+  "/add_User_Profile_Picture_Multer",
+  upload.single("profilePicture"),
+  async (req, res) => {
+    console.log(req.file);
+    res.send({ message: "Successfully Stored" });
+  }
+);
 
 //Using .exec/callback to solve toArray() function issue
 
