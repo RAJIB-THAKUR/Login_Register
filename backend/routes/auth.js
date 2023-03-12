@@ -627,7 +627,7 @@ router.post(
         });
       }
     } catch (error) {
-      res.send({ error: error.message });
+      res.send({ status: 400, error: error.message });
       // console.log(error);
     }
   }
