@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
-var ObjectId = require('mongodb').ObjectID;
+const ObjectId = require("mongodb").ObjectID;
 
 const userSchema = new mongoose.Schema({
-  // _id: ObjectId,
+  // _id: { type: ObjectId },
   name: {
     type: String,
     required: true,
@@ -51,8 +51,9 @@ const userSchema = new mongoose.Schema({
       ],
     },
   ],
-  prof_Pic:String,
+  prof_Pic: { type: String },
+  expense_Type_List: [{ expense_Type: { type: String } }],
 });
 
 const Expense = mongoose.model("expenses2", userSchema);
-module.exports =  Expense;
+module.exports = Expense;
