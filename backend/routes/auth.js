@@ -726,61 +726,7 @@ router.post("/fetch_User_Profile_Details", async (req, res) => {
   }
 });
 
-//ROUTE-18:Add Expense_Type for the user
-router.post("/add_User_Expense_Type", async (req, res) => {
-  try {
-    const { token, expense_Type } = req.body;
-    const _id = jwt.verify(token, JWT_SECRET)._id;
-
-    User.findOne(
-      {
-        _id: ObjectId(_id),
-        expense_Type_List: { $elemMatch: { expense_Type: expense_Type } },
-      },
-      async (err, user) => {
-        if (user) {
-          res.status(400).json({ message: "This Expense Type Already Exists" });
-        } else {
-          User.updateOne(
-            {
-              _id: _id,
-            },
-            {
-              $push: {
-                expense_Type_List: { expense_Type: expense_Type },
-              },
-            },
-            async (error, ans) => {
-              if (error)
-                res.status(400).json({
-                  message: "Could not add due to some error",
-                  error: error.msg,
-                });
-              else {
-                if (ans.modifiedCount === 1) {
-                  res.status(200).json({
-                    message: "New Expense Type Successfully Added",
-                    ans,
-                  });
-                } else {
-                  res
-                    .status(400)
-                    .json({ message: "Could not add due to some error" });
-                }
-              }
-            }
-          );
-        }
-      }
-    );
-  } catch (error) {
-    res
-      .status(400)
-      .json({ message: "Could not add due to some error", error: error.msg });
-  }
-});
-
-//ROUTE-19:Update User Profile Details
+//ROUTE-18:Update User Profile Details
 router.post("/update_User_Profile_Details", async (req, res) => {
   try {
     const { token, name, email, mobile, prof_Pic } = req.body;
@@ -858,6 +804,61 @@ router.post("/update_User_Profile_Details", async (req, res) => {
     });
   }
 });
+
+//ROUTE-19:Add Expense_Type for the user
+router.post("/add_User_Expense_Type", async (req, res) => {
+  try {
+    const { token, expense_Type } = req.body;
+    const _id = jwt.verify(token, JWT_SECRET)._id;
+
+    User.findOne(
+      {
+        _id: ObjectId(_id),
+        expense_Type_List: { $elemMatch: { expense_Type: expense_Type } },
+      },
+      async (err, user) => {
+        if (user) {
+          res.status(400).json({ message: "This Expense Type Already Exists" });
+        } else {
+          User.updateOne(
+            {
+              _id: _id,
+            },
+            {
+              $push: {
+                expense_Type_List: { expense_Type: expense_Type },
+              },
+            },
+            async (error, ans) => {
+              if (error)
+                res.status(400).json({
+                  message: "Could not add due to some error",
+                  error: error.msg,
+                });
+              else {
+                if (ans.modifiedCount === 1) {
+                  res.status(200).json({
+                    message: "New Expense Type Successfully Added",
+                    ans,
+                  });
+                } else {
+                  res
+                    .status(400)
+                    .json({ message: "Could not add due to some error" });
+                }
+              }
+            }
+          );
+        }
+      }
+    );
+  } catch (error) {
+    res
+      .status(400)
+      .json({ message: "Could not add due to some error", error: error.msg });
+  }
+});
+
 
 //----------------IN-PROGRESS--------------
 
