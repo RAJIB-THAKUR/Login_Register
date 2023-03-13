@@ -741,11 +741,13 @@ router.post("/update_User_Profile_Details", async (req, res) => {
     if (user) {
       //Check if new-email is registered with some other user
       if (user._id.toString() !== _id) {
+
         // console.log(user._id.toString() !== _id);
         // console.log(typeof _id);
         // console.log(typeof user._id.toString());
         // console.log(user._id.toString());
         // console.log(_id);
+
         return res.status(400).json({
           status: 400,
           message: "Some Other User Already Exists with this email",
@@ -783,15 +785,15 @@ router.post("/update_User_Profile_Details", async (req, res) => {
         if (error) res.send(error);
         else {
           if (ans.modifiedCount === 1) {
-            res.send({ message: "successfully stored", ans });
+            res.send({ message: "Successfully Updated", ans });
           } else {
             if (ans.matchedCount === 1) {
               res.send({
-                message: "Kindly Provide Updated Expense Details",
+                message: "Kindly Provide Updated Details",
                 ans,
               });
             } else {
-              res.send({ message: "Could not update", ans });
+              res.send({ message: "Could not Update\nSome technical error occurred", ans });
             }
           }
         }
@@ -858,7 +860,6 @@ router.post("/add_User_Expense_Type", async (req, res) => {
       .json({ message: "Could not add due to some error", error: error.msg });
   }
 });
-
 
 //----------------IN-PROGRESS--------------
 
