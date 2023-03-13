@@ -780,8 +780,6 @@ router.post("/add_User_Expense_Type", async (req, res) => {
   }
 });
 
-//----------------IN-PROGRESS--------------
-
 //ROUTE-19:Update User Profile Details
 router.post("/update_User_Profile_Details", async (req, res) => {
   try {
@@ -860,6 +858,8 @@ router.post("/update_User_Profile_Details", async (req, res) => {
     });
   }
 });
+
+//----------------IN-PROGRESS--------------
 
 //ROUTE-:Add Profile Picture of user
 router.post("/add_User_Profile_Picture", async (req, res) => {
