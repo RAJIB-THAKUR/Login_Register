@@ -728,7 +728,7 @@ router.post("/fetch_User_Profile_Details", async (req, res) => {
 
 //----------------IN-PROGRESS--------------
 
-//ROUTE-17:Add Profile Picture of user
+//ROUTE-:Add Profile Picture of user
 router.post("/add_User_Profile_Picture", async (req, res) => {
   const { prof_Pic } = req.body;
 
@@ -761,7 +761,7 @@ router.post("/add_User_Profile_Picture", async (req, res) => {
   // }
 });
 
-//ROUTE-18:Add Profile Picture of user
+//ROUTE-:Add Profile Picture of user
 router.post(
   "/add_User_Profile_Picture_Multer",
   upload.single("profilePicture"),
