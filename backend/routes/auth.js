@@ -703,6 +703,29 @@ router.post(
   }
 );
 
+//ROUTE-17:Fetch User Profile Details
+router.post("/fetch_User_Profile_Details", async (req, res) => {
+  const { token } = req.body;
+  try {
+    const _id = jwt.verify(token, JWT_SECRET)._id;
+    // console.log(token);
+    // console.log(user);
+
+    User.findOne(
+      { _id: ObjectId(_id) },
+      { _id: 0, name: 1, email: 1, mobile: 1, prof_Pic: 1 }
+    )
+      .then((data) => {
+        res.status(200).json({ message: "ok", data: data });
+      })
+      .catch((error) => {
+        res.status(400).json({ message: "Error", data: error });
+      });
+  } catch (error) {
+    res.send({ message: "Some Internal Server Error", data: error.msg });
+  }
+});
+
 //----------------IN-PROGRESS--------------
 
 //ROUTE-17:Add Profile Picture of user
