@@ -793,7 +793,7 @@ router.post("/update_User_Profile_Details", async (req, res) => {
                 ans,
               });
             } else {
-              res.send({ message: "Could not Update\nSome technical error occurred", ans });
+              res.send({ message: "Details Could not be Updated\nSome technical error occurred", ans });
             }
           }
         }
@@ -801,7 +801,7 @@ router.post("/update_User_Profile_Details", async (req, res) => {
     );
   } catch (error) {
     return res.json({
-      message: "Some Error Occured\nExpense not updated",
+      message: "Details Could not be Updated\nSome technical error occurred",
       error: error.message,
     });
   }
@@ -857,7 +857,7 @@ router.post("/add_User_Expense_Type", async (req, res) => {
   } catch (error) {
     res
       .status(400)
-      .json({ message: "Could not add due to some error", error: error.msg });
+      .json({ message: "Expense Type Could not be Updated\nSome technical error occurred", error: error.msg });
   }
 });
 
