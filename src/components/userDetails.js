@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-const PORT = 3100;
+const PORT = 3200;
 
 class UserDetails extends Component {
   constructor(props) {
@@ -23,7 +23,7 @@ class UserDetails extends Component {
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log(data, "userData");
+        // console.log(data, "userData");
         this.setState({ userData: data.data });
       });
   }

@@ -1,7 +1,7 @@
 import "../App.css";
 import { Outlet, Link } from "react-router-dom";
 import React from "react";
-const PORT=3100;
+const PORT=3200;
 
 class Sign extends React.Component {
   constructor(props) {
@@ -19,7 +19,7 @@ class Sign extends React.Component {
     e.preventDefault();
 
     const { name, email, mobile, password } = this.state;
-    console.log(name, email, mobile, password);
+    // console.log(name, email, mobile, password);
 
     fetch(`http://localhost:${PORT}/user/register`, {
       method: "POST",
@@ -38,20 +38,18 @@ class Sign extends React.Component {
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log(data, "userRegister_Response");
+        // console.log(data, "userRegister_Response");
 
         if (data.status === 200) {
           alert("Registration Successful");
         } 
         else if (data.status == 400) {
-          console.log(data.error);
-          // console.log(typeof(data.error));
-          alert(data.error[0].msg);
-          console.log(data.error[0].msg);
+          alert(data.error);
+          // console.log(data.error);
         }
         else if(data.status == 500) {
           alert(data.error);
-          console.log(data.error)
+          // console.log(data.error)
         }
       });
   }

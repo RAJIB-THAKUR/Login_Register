@@ -1,6 +1,6 @@
 import { Outlet, Link } from "react-router-dom";
 import React, { Component, useState } from "react";
-const PORT=3100;
+const PORT=3200;
 
 class Log extends React.Component {
   constructor(props) {
@@ -15,7 +15,7 @@ class Log extends React.Component {
   handleSubmit2(e) {
     e.preventDefault();
     const {email,password}=this.state;
-    console.log(email, password);
+    // console.log(email, password);
     fetch(`http://localhost:${PORT}/user/login`, {
       method: "POST",
       crossDomain: true,
@@ -31,17 +31,17 @@ class Log extends React.Component {
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log(data, "userLogin_Response");
+        // console.log(data, "userLogin_Response");
         if (data.status == 201) {
           alert("Login successful");
           window.localStorage.setItem("token", data.data);
           // window.localStorage.setItem("loggedIn", true);
-          window.location.href = "/login/userDetails";
+          window.location.href = "/Login_Register/userDetails";
           // window.location.href = "/userDetails";
           
         }
         else if(data.status == 400){
-          alert(data.error[0].msg);
+          alert(data.error);
         }
       });
   }
