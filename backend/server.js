@@ -15,7 +15,7 @@ app.use(cors());
 //Backend Routes
 app.use("/user",require("./routes/auth"));
 
-const PORT = 3200;
+const PORT = process.env.PORT||3200;
 
 
 app.listen(PORT, () => {

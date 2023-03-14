@@ -37,7 +37,7 @@ router.post(
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ status: 400, error: errors.array() });
+      return res.status(400).json({ status: 400, error: errors.array()[0].msg  });
     }
     const { name, email, mobile, password } = req.body;
 
@@ -47,7 +47,7 @@ router.post(
       if (oldUser) {
         return res.status(400).json({
           status: 400,
-          error: [{ msg: "User Already Exists with this email" }],
+          error:"User Already Exists with this email" ,
         });
       }
       const salt = await bcrypt.genSalt(10);
@@ -82,7 +82,9 @@ router.post(
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ status: 400, error: errors.array() });
+      return res
+        .status(400)
+        .json({ status: 400, error: errors.array()[0].msg });
     }
     const { email, password } = req.body;
 
@@ -91,7 +93,7 @@ router.post(
     if (!user) {
       return res.status(400).json({
         status: 400,
-        error: [{ msg: "User Not Found \nGet yourself Registered first" }],
+        error: "User Not Found \nGet yourself Registered first",
       });
     }
     // if ((await password) === user.password)
@@ -108,12 +110,12 @@ router.post(
       } else {
         return res.json({
           status: 400,
-          error: [{ msg: "Some Error Ocurred\nTry Again" }],
+          error: "Some Error Ocurred\nTry Again",
           // error: "Some Error Ocurred\nTry Again",
         });
       }
     }
-    res.json({ status: 400, error: [{ msg: "IInvalid Password" }] });
+    res.json({ status: 400, error: "Invalid Password"});
   }
 );
 
@@ -121,11 +123,10 @@ router.post(
 router.post("/userData", async (req, res) => {
   const { token } = req.body;
   try {
-    const user = jwt.verify(token, JWT_SECRET);
     console.log(token);
-    console.log(user);
-    const userEmail = user.email;
-    User.findOne({ email: userEmail })
+    // console.log(user);
+    const _id = jwt.verify(token, JWT_SECRET)._id;
+    User.findOne({ _id: ObjectId(_id) })
       .then((data) => {
         res.send({ status: "ok", data: data });
       })
@@ -133,7 +134,7 @@ router.post("/userData", async (req, res) => {
         res.send({ status: "ok", data: error });
       });
   } catch (error) {
-    res.send({ status: "Failed", data: error });
+    res.send({ status: "Failed", data: error.message });
   }
 });
 
@@ -741,7 +742,6 @@ router.post("/update_User_Profile_Details", async (req, res) => {
     if (user) {
       //Check if new-email is registered with some other user
       if (user._id.toString() !== _id) {
-
         // console.log(user._id.toString() !== _id);
         // console.log(typeof _id);
         // console.log(typeof user._id.toString());
@@ -793,7 +793,11 @@ router.post("/update_User_Profile_Details", async (req, res) => {
                 ans,
               });
             } else {
-              res.send({ message: "Details Could not be Updated\nSome technical error occurred", ans });
+              res.send({
+                message:
+                  "Details Could not be Updated\nSome technical error occurred",
+                ans,
+              });
             }
           }
         }
@@ -855,9 +859,11 @@ router.post("/add_User_Expense_Type", async (req, res) => {
       }
     );
   } catch (error) {
-    res
-      .status(400)
-      .json({ message: "Expense Type Could not be Updated\nSome technical error occurred", error: error.msg });
+    res.status(400).json({
+      message:
+        "Expense Type Could not be Updated\nSome technical error occurred",
+      error: error.msg,
+    });
   }
 });
 
