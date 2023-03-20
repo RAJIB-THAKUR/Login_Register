@@ -133,7 +133,7 @@ router.post("/userData", async (req, res) => {
         res.send({ status: "ok", data: data });
       })
       .catch((error) => {
-        res.send({ status: "ok", data: error });
+        res.send({ status: "ok", data: error.message });
       });
   } catch (error) {
     res.send({ status: "Failed", data: error.message });
@@ -722,10 +722,10 @@ router.post("/fetch_User_Profile_Details", async (req, res) => {
         res.status(200).json({ message: "ok", data: data });
       })
       .catch((error) => {
-        res.status(400).json({ message: "Error", data: error });
+        res.status(400).json({ message: "Error", data: error.message });
       });
   } catch (error) {
-    res.send({ message: "Some Internal Server Error", data: error.msg });
+    res.send({ message: "Some Internal Server Error", data: error.message });
   }
 });
 
@@ -841,7 +841,7 @@ router.post("/add_User_Expense_Type", async (req, res) => {
               if (error)
                 res.status(400).json({
                   message: "Could not add due to some error",
-                  error: error.msg,
+                  error: error.message,
                 });
               else {
                 if (ans.modifiedCount === 1) {
@@ -864,12 +864,34 @@ router.post("/add_User_Expense_Type", async (req, res) => {
     res.status(400).json({
       message:
         "Expense Type Could not be Updated\nSome technical error occurred",
-      error: error.msg,
+      error: error.message,
     });
   }
 });
 
-//----------------IN-PROGRESS--------------
+//ROUTE-20:Fetch User Expense Types
+router.post("/fetch_User_Expense_Types", async (req, res) => {
+  const { token } = req.body;
+  try {
+    const _id = jwt.verify(token, JWT_SECRET)._id;
+
+    User.findOne(
+      { _id: ObjectId(_id) },
+      { _id: 0, "expense_Type_List.expense_Type": 1 }
+    )
+      .then((data) => {
+        res.status(200).json({ message: "ok", data: data });
+      })
+      .catch((error) => {
+        res.status(400).json({ message: "Error", data: error.message });
+      });
+  } catch (error) {
+    res.send({ message: "Some Internal Server Error", data: error.message });
+  }
+});
+
+//----------------IN--PROGRESS--------------
+
 
 //ROUTE-:Add Profile Picture of user
 router.post("/add_User_Profile_Picture", async (req, res) => {
@@ -899,7 +921,7 @@ router.post("/add_User_Profile_Picture", async (req, res) => {
   //   console.log(error);
   //   res.status(500).send({
   //     status: 500,
-  //     error: error.msg,
+  //     error: error.message,
   //   });
   // }
 });
@@ -913,7 +935,6 @@ router.post(
     res.send({ message: "Successfully Stored" });
   }
 );
-
 
 //Using .exec/callback to solve toArray() function issue
 
